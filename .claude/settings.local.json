@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(timeout 540 ./gradlew classes --console=plain)",
+      "Bash(./gradlew classes *)"
+    ]
+  }
+}

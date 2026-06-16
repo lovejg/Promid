@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(//home/tmakdrl/**)",
+      "Bash(mv spring *)",
+      "Bash(mkdir -p promid/frontend)"
+    ]
+  }
+}
