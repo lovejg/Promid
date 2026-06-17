@@ -2,7 +2,17 @@
   "permissions": {
     "allow": [
       "Bash(timeout 540 ./gradlew classes --console=plain)",
-      "Bash(./gradlew classes *)"
+      "Bash(./gradlew classes *)",
+      "Read(//home/tmakdrl/.config/**)",
+      "Read(//home/tmakdrl/.cache/JetBrains/**)",
+      "Read(//home/tmakdrl/**)",
+      "Bash(mkdir -p ~/.config/JetBrains)",
+      "Bash(touch ~/.config/JetBrains/.write_test)",
+      "Bash(rm ~/.config/JetBrains/.write_test)",
+      "Read(//usr/lib/**)",
+      "Read(//usr/lib/jvm/java-21-openjdk-amd64/**)",
+      "Bash(rm -rf ~/.jdks/temurin-21.0.11-1 ~/.jdks/temurin-21.0.11-2 ~/.jdks/.temurin-21.0.11-1.intellij ~/.jdks/.temurin-21.0.11-2.intellij ~/.cache/JetBrains ~/.config/JetBrains)",
+      "Bash(~/.jdks/temurin-21.0.11/bin/java -version)"
     ]
   }
 }
