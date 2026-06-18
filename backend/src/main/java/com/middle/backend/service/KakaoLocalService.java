@@ -14,6 +14,7 @@ import java.util.List;
 public class KakaoLocalService {
     private final RestClient kakaoRestClient;
 
+    // 장소 -> 좌표
     public Coordinate geocode(String query) {
         KakaoSearchResponse res = kakaoRestClient.get().uri(uriBuilder -> uriBuilder
                         .path("/v2/local/search/keyword.json")
@@ -30,6 +31,7 @@ public class KakaoLocalService {
         return new Coordinate(Double.parseDouble(first.y()), Double.parseDouble(first.x())); // lat이 y고, lng가 x
     }
 
+    // 좌표 -> 근처 장소
     public List<PlaceDto> searchStations(Coordinate center, Integer radius) {
         KakaoSearchResponse res = kakaoRestClient.get().uri(uriBuilder -> uriBuilder
                         .path("/v2/local/search/category.json")

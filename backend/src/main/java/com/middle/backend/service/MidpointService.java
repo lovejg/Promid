@@ -9,7 +9,7 @@ import java.util.List;
 @Service
 public class MidpointService {
 
-    public Coordinate calculate(List<WeightedPoint> points) {
+    public Coordinate calculateMid(List<WeightedPoint> points) {
         if(points == null || points.isEmpty()) {
             throw new IllegalArgumentException("중점 계산에는 최소 1개 이상의 점이 필요합니다.");
         }

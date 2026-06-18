@@ -11,10 +11,12 @@ public class KakaoConfig {
 
     @Bean
     public RestClient kakaoRestClient(
-            RestClient.Builder builder,
             @Value("${kakao.api.base-url}") String baseUrl,
             @Value("${kakao.rest-api-key}") String apiKey
     ) {
-        return builder.baseUrl(baseUrl).defaultHeader(HttpHeaders.AUTHORIZATION, "KakaoAK " + apiKey).build();
+        return RestClient.builder()
+                .baseUrl(baseUrl)
+                .defaultHeader(HttpHeaders.AUTHORIZATION, "KakaoAK " + apiKey)
+                .build();
     }
 }
