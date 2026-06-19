@@ -1,6 +1,7 @@
 package com.middle.backend.exception;
 
 import com.middle.backend.dto.ErrorResponse;
+import jakarta.validation.ConstraintViolationException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -18,6 +19,13 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorResponse> handleValidation(MethodArgumentNotValidException e) {
         String message = e.getBindingResult().getAllErrors().get(0).getDefaultMessage(); // MVP니까 일단 첫 메세지 하나만 뽑기
         ErrorResponse body = new ErrorResponse(400, message);
+        return ResponseEntity.badRequest().body(body);
+    }
+
+    // @Validated + 파라미터 제약(@RequestParam @NotBlank 등) 위반은 이 예외로 떨어짐
+    @ExceptionHandler(ConstraintViolationException.class)
+    public ResponseEntity<ErrorResponse> handleConstraintViolation(ConstraintViolationException e) {
+        ErrorResponse body = new ErrorResponse(400, e.getMessage());
         return ResponseEntity.badRequest().body(body);
     }
 }

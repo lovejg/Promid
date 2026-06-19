@@ -1,4 +1,4 @@
-import type { TotalRequest, TotalResponse, ErrorResponse } from "./types";
+import type { TotalRequest, TotalResponse, ErrorResponse, PlaceSuggestion } from "./types";
 
 const API_BASE = import.meta.env.VITE_API_BASE ?? "http://localhost:8080";
 
@@ -38,4 +38,22 @@ export async function fetchMidpoint(req: TotalRequest): Promise<TotalResponse> {
   }
 
   return (await res.json()) as TotalResponse;
+}
+
+/** GET /api/places/search — 자동완성 후보 목록. 실패하면 빈 배열(자동완성은 조용히 무시). */
+export async function searchPlaces(
+  query: string,
+  signal?: AbortSignal,
+): Promise<PlaceSuggestion[]> {
+  try {
+    const res = await fetch(
+      `${API_BASE}/api/places/search?query=${encodeURIComponent(query)}`,
+      { signal },
+    );
+    if (!res.ok) return [];
+    return (await res.json()) as PlaceSuggestion[];
+  } catch {
+    // 네트워크 오류 / AbortError 등은 조용히 무시 (자동완성은 best-effort)
+    return [];
+  }
 }

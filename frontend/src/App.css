@@ -125,9 +125,79 @@
   place-items: center;
 }
 
+.autocomplete {
+  position: relative;
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+}
+
 .place-input {
   flex: 1 1 auto;
   min-width: 0;
+  width: 100%;
+}
+
+.place-input.confirmed {
+  border-color: #10b981;
+  background: #f0fdf4;
+  padding-right: 30px; /* ✓ 자리 확보 */
+}
+
+.confirm-check {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #10b981;
+  font-weight: 800;
+  pointer-events: none;
+}
+
+/* ---- autocomplete dropdown ---- */
+.suggestions {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  z-index: 30;
+  margin: 0;
+  padding: 4px;
+  list-style: none;
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  box-shadow: var(--shadow);
+  max-height: 280px;
+  overflow-y: auto;
+}
+
+.suggestion {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 9px 10px;
+  border-radius: 7px;
+  cursor: pointer;
+}
+
+.suggestion.active {
+  background: var(--indigo-soft);
+}
+
+.suggestion-name {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.suggestion-addr {
+  font-size: 0.78rem;
+  color: var(--muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .coord-chip {

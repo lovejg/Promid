@@ -26,6 +26,13 @@ export interface PlaceDto {
   distance: number;
 }
 
+/** GET /api/places/search 후보 1개 (자동완성용) */
+export interface PlaceSuggestion {
+  name: string;
+  location: Coordinate;
+  address: string;
+}
+
 export interface TotalResponse {
   midpoint: Coordinate;
   origins: Coordinate[]; // 각 출발지의 (해석된) 좌표

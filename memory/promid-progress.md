@@ -39,7 +39,17 @@ DONE:
 - FRONTEND scaffolded + fully built by Claude (React 19 + Vite 8 + TS 6) in frontend/:
   - src/types.ts (DTO mirror), src/api.ts (fetchMidpoint + ApiError reads ErrorResponse.message), src/kakaoLoader.ts (dynamic Kakao Maps JS SDK load via VITE_KAKAO_JS_KEY), src/KakaoMap.tsx (map + 중점/역 markers + CustomOverlay labels + panTo on list select), src/App.tsx (N start-point form: text OR 현재위치 geolocation, optional weight/radius; result = map + station list), src/App.css, src/index.css reset, src/vite-env.d.ts (env typing).
   - Map choice: KAKAO MAP JS SDK (user chose, over Leaflet). Needs user console setup: (1) JavaScript 키 → frontend/.env.local VITE_KAKAO_JS_KEY (gitignored; .env.example committed), (2) register http://localhost:5173 as Web platform in Kakao Developers.
-  - Verified: tsc -b ok, npm run build ok, dev server boots on 5173 (HTTP 200). NOT yet tested with real key in browser.
-  - Run: backend `./gradlew bootRun` (8080) + frontend `npm run dev` (5173). CORS already allows 5173.
+  - Run: backend `./gradlew bootRun` (8080) + frontend `npm run dev -- --port 5173 --strictPort`. CORS allows 5173. Kakao JS SDK domain must be registered at [플랫폼 키]>[JavaScript 키]>[JavaScript SDK 도메인] (NOT 제품 링크 관리).
+  - Browser-tested live: form → map(출발지·중점·역 markers) + station list works. Then FULL REDESIGN (bigger map via grid 1fr/360px calc(100vh-200px), collapsible form, legend, responsive).
 
-NEXT — user pastes Kakao JS key into frontend/.env.local + registers localhost:5173 domain, then live browser test (form → map with midpoint+stations). After that: future roadmap (transit-time sorting, auth, etc.).
+- 임무 7 DONE — tests: `src/test/.../service/MidpointServiceTest` (JUnit5+AssertJ, no Spring) — 1:1 중점, 가중치 3:1, 빈 리스트 예외. User wrote, taught Given-When-Then. `./gradlew test` green.
+
+- 임무 8 DONE — 주소 자동완성 (roadmap step 2):
+  - Backend: `GET /api/places/search?query=` (@RequestParam @NotBlank + class @Validated) → `searchPlaces` returns `List<PlaceSuggestion>`(name, location, address) via keyword.json, empty list (not exception) when no results. Added `ConstraintViolationException` handler → 400 (else blank query gave 500).
+  - Frontend (Claude): `StartField.tsx` component — debounced(250ms) search w/ AbortController, dropdown (name+address), full keyboard (↑↓ wrap / Enter picks & blocks submit / Esc) + scrollIntoView, pick→confirms coord (green ✓, sends lat/lng not text), retyping clears coord, name-match ranking (startsWith>includes>rest), MIN_QUERY_LEN=2 (Kakao keyword search ≠ prefix typeahead). api.ts searchPlaces, types.ts PlaceSuggestion.
+
+- ROADMAP 3 DIRECTION DECIDED (not yet built): transit-time fairness as 2-layer — distance midpoint = search anchor (cheap/stable), transit time = RANK the ~15 candidate stations (bounded API calls). Fairness metric: minimax (protect worst-off person) preferred over min-gap/min-sum. Still need: routing API choice (ODsay etc.). See docs/DECISIONS.md #10.
+
+- Decision log started at docs/DECISIONS.md (portfolio material) — see [[decision-log-convention]].
+
+NEXT — roadmap step 3 (transit-time ranking) when user signals: pick routing API + confirm fairness metric, then design mission. Steps 4 (auth/JPA·Security) and 5 (nearby attractions) later.

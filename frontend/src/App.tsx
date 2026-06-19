@@ -1,15 +1,9 @@
 import { useState } from "react";
 import "./App.css";
-import type { Coordinate, StartRequest, TotalResponse } from "./types";
+import type { StartRequest, TotalResponse } from "./types";
 import { ApiError, fetchMidpoint } from "./api";
 import KakaoMap from "./KakaoMap";
-
-/** 화면에서 다루는 출발지 입력 상태 (텍스트 또는 좌표) */
-interface StartInput {
-  place: string;
-  coord: Coordinate | null; // '현재 위치' 버튼으로 채워짐
-  weight: string; // 빈 문자열이면 기본값(1)
-}
+import StartField, { type StartInput } from "./StartField";
 
 const emptyStart = (): StartInput => ({ place: "", coord: null, weight: "" });
 
@@ -111,53 +105,15 @@ function App() {
 
             <div className="starts">
               {starts.map((s, i) => (
-                <div className="start-row" key={i}>
-                  <span className="start-index">{i + 1}</span>
-
-                  {s.coord ? (
-                    <div className="coord-chip">
-                      <span>📍 현재 위치 ({s.coord.lat.toFixed(4)}, {s.coord.lng.toFixed(4)})</span>
-                      <button
-                        type="button"
-                        className="link-btn"
-                        onClick={() => updateStart(i, { coord: null })}
-                      >
-                        해제
-                      </button>
-                    </div>
-                  ) : (
-                    <input
-                      className="place-input"
-                      placeholder="장소 입력 (예: 강남역, 여의도역 7번출구)"
-                      value={s.place}
-                      onChange={(e) => updateStart(i, { place: e.target.value })}
-                    />
-                  )}
-
-                  <button type="button" className="loc-btn" onClick={() => useMyLocation(i)}>
-                    현재위치
-                  </button>
-
-                  <input
-                    className="weight-input"
-                    type="number"
-                    min={1}
-                    placeholder="비중"
-                    value={s.weight}
-                    onChange={(e) => updateStart(i, { weight: e.target.value })}
-                    title="가중치 (비워두면 1). 클수록 그 사람 쪽으로 중점이 당겨져요."
-                  />
-
-                  <button
-                    type="button"
-                    className="remove-btn"
-                    onClick={() => removeStart(i)}
-                    disabled={starts.length <= 2}
-                    title="출발지 삭제"
-                  >
-                    ✕
-                  </button>
-                </div>
+                <StartField
+                  key={i}
+                  index={i}
+                  value={s}
+                  canRemove={starts.length > 2}
+                  onChange={(patch) => updateStart(i, patch)}
+                  onRemove={() => removeStart(i)}
+                  onUseLocation={() => useMyLocation(i)}
+                />
               ))}
             </div>
 

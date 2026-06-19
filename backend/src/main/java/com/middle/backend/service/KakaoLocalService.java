@@ -2,6 +2,7 @@ package com.middle.backend.service;
 
 import com.middle.backend.domain.Coordinate;
 import com.middle.backend.dto.PlaceDto;
+import com.middle.backend.dto.PlaceSuggestion;
 import com.middle.backend.dto.kakao.KakaoSearchResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -52,5 +53,20 @@ public class KakaoLocalService {
                 Integer.parseInt(d.distance()))).toList();
 
         return placeList;
+    }
+
+    public List<PlaceSuggestion> searchPlaces(String query) {
+        KakaoSearchResponse res = kakaoRestClient.get().uri(uriBuilder -> uriBuilder
+                        .path("/v2/local/search/keyword.json")
+                        .queryParam("query", query)
+                        .build())
+                .retrieve()
+                .body(KakaoSearchResponse.class);
+
+        var docs = res.documents(); // 검색어 장소 리스트
+        if(docs == null) return List.of();
+        return docs.stream().map(d -> new PlaceSuggestion(d.placeName(),
+                new Coordinate(Double.parseDouble(d.y()), Double.parseDouble(d.x())),
+                d.addressName())).toList();
     }
 }

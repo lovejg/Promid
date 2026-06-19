@@ -40,7 +40,24 @@
       "Bash(pkill -f bootRun)",
       "Bash(pkill -f BackendApplication)",
       "Bash(python3 -m json.tool)",
-      "Bash(curl -s -o /dev/null -w \"backend 8080: HTTP %{http_code}\\\\n\" -X POST http://localhost:8080/api/midpoint -H \"Content-Type: application/json\" -d '{\"places\":[{\"place\":\"강남역\"},{\"place\":\"여의도역\"}]}')"
+      "Bash(curl -s -o /dev/null -w \"backend 8080: HTTP %{http_code}\\\\n\" -X POST http://localhost:8080/api/midpoint -H \"Content-Type: application/json\" -d '{\"places\":[{\"place\":\"강남역\"},{\"place\":\"여의도역\"}]}')",
+      "Bash(./gradlew test *)",
+      "Bash(curl -s \"http://localhost:8080/api/places/search?query=%EA%B0%95%EB%82%A8%EC%97%AD\")",
+      "Bash(python3 -m json.tool --no-ensure-ascii)",
+      "Bash(curl -s \"http://localhost:8080/api/places/search?query=%E3%85%81%E3%85%82%E3%85%81%E3%85%82%E3%85%81%E3%85%82\")",
+      "Bash(curl -s -w \"\\\\n[HTTP %{http_code}]\\\\n\" \"http://localhost:8080/api/places/search?query=\")",
+      "Bash(curl -s -w \"\\\\n[HTTP %{http_code}]\\\\n\" \"http://localhost:8080/api/places/search\")",
+      "Bash(pkill -f \"bootRun|BackendApplication\")",
+      "Bash(echo \"exit=$?\")",
+      "Bash(curl -s \"http://localhost:8080/api/places/search?query=%EA%B0%95\")",
+      "Bash(python3 -c \"import sys,json; [print\\(f'{i+1:2}. {d[\\\\\"name\\\\\"]}  | {d[\\\\\"address\\\\\"]}'\\) for i,d in enumerate\\(json.load\\(sys.stdin\\)\\)]\")",
+      "Bash(ls docs *)",
+      "Bash(cat memory/MEMORY.md)",
+      "Bash(curl -s -o /dev/null -w \"8080=%{http_code}\\\\n\" --max-time 3 http://localhost:8080/)",
+      "Bash(curl -s -o /dev/null -w \"5173=%{http_code}\\\\n\" --max-time 3 http://localhost:5173/)",
+      "Bash(pkill -f \"vite\")",
+      "Bash(curl -s --max-time 8 https://api.ipify.org)",
+      "Bash(curl -s --max-time 8 ifconfig.me)"
     ]
   }
 }
