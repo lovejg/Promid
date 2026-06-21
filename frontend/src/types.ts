@@ -33,10 +33,19 @@ export interface PlaceSuggestion {
   address: string;
 }
 
+/** 대중교통 시간으로 점수 매겨 정렬한 추천 역 1개 (백엔드 RankedPlace) */
+export interface RankedPlace {
+  place: PlaceDto;
+  /** 출발지별 소요시간(분). origins 순서와 1:1. 경로를 못 구한 출발지는 null. */
+  minutes: (number | null)[];
+  /** minimax 점수(최댓값, 분). 한 명이라도 못 가면 null → 목록 맨 뒤. */
+  maxMinutes: number | null;
+}
+
 export interface TotalResponse {
   midpoint: Coordinate;
   origins: Coordinate[]; // 각 출발지의 (해석된) 좌표
-  places: PlaceDto[];
+  places: RankedPlace[];
 }
 
 /** 백엔드 GlobalExceptionHandler가 내려주는 에러 형식 */

@@ -57,7 +57,16 @@
       "Bash(curl -s -o /dev/null -w \"5173=%{http_code}\\\\n\" --max-time 3 http://localhost:5173/)",
       "Bash(pkill -f \"vite\")",
       "Bash(curl -s --max-time 8 https://api.ipify.org)",
-      "Bash(curl -s --max-time 8 ifconfig.me)"
+      "Bash(curl -s --max-time 8 ifconfig.me)",
+      "Bash(echo \"기동 시작, PID=$!\")",
+      "Bash(python3 -c \"import sys,json; d=json.load\\(sys.stdin\\); print\\('후보 수:', len\\(d['places']\\)\\); [print\\(f\\\\\"  {p['place']['name']:18s} minutes={p['minutes']}  max={p['maxMinutes']}\\\\\"\\) for p in d['places']]\")",
+      "Bash(python3 -c \"import sys,json; d=json.load\\(sys.stdin\\); print\\('후보 수:', len\\(d['places']\\)\\); [print\\(f\\\\\"  {i+1}. {p['place']['name']:20s} 거리={p['place']['distance']:5d}m  minutes={p['minutes']}  max={p['maxMinutes']}\\\\\"\\) for i,p in enumerate\\(d['places']\\)]\")",
+      "Bash(python3 -c \"import sys,json; d=json.load\\(sys.stdin\\); print\\(json.dumps\\(d.get\\('error', d.get\\('result','?'\\)\\), ensure_ascii=False\\)[:300]\\)\")",
+      "Bash(pkill -f 'bootRun')",
+      "Bash(pkill -f 'BackendApplication')",
+      "Bash(echo \"--- tsc 종료코드: $? ---\")",
+      "Bash(curl -s -o /dev/null -w \"프론트 응답: %{http_code}\\\\n\" http://localhost:5173/)",
+      "Bash(curl -s -o /dev/null -w \"백엔드 응답: %{http_code}\\\\n\" \"http://localhost:8080/api/places/search?query=강남\")"
     ]
   }
 }

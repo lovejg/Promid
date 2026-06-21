@@ -13,6 +13,7 @@ function App() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<TotalResponse | null>(null);
+  const [originLabels, setOriginLabels] = useState<string[]>([]); // origins와 1:1, 칩 표시용
   const [editing, setEditing] = useState(true); // 결과가 나오면 false로 (폼 접힘)
   const [focusIndex, setFocusIndex] = useState<number | null>(null);
 
@@ -41,26 +42,32 @@ function App() {
     );
   };
 
-  /** 입력 상태 → 백엔드 StartRequest 변환 (빈 입력은 제외) */
-  const toRequestPlaces = (): StartRequest[] =>
+  /** 입력 상태 → {백엔드 요청, 표시용 라벨} (빈 입력은 제외).
+   *  라벨: 자동완성/텍스트는 입력한 이름, 현재 위치(좌표만)는 "내 위치". */
+  const buildEntries = (): { req: StartRequest; label: string }[] =>
     starts
-      .map((s): StartRequest | null => {
+      .map((s): { req: StartRequest; label: string } | null => {
         const weight = s.weight.trim() ? Number(s.weight) : undefined;
-        if (s.coord) return { lat: s.coord.lat, lng: s.coord.lng, weight };
-        if (s.place.trim()) return { place: s.place.trim(), weight };
+        if (s.coord) {
+          const label = s.place.trim() || "내 위치";
+          return { req: { lat: s.coord.lat, lng: s.coord.lng, weight }, label };
+        }
+        if (s.place.trim()) return { req: { place: s.place.trim(), weight }, label: s.place.trim() };
         return null;
       })
-      .filter((p): p is StartRequest => p !== null);
+      .filter((e): e is { req: StartRequest; label: string } => e !== null);
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
 
-    const places = toRequestPlaces();
-    if (places.length < 2) {
+    const entries = buildEntries();
+    if (entries.length < 2) {
       setError("출발지를 2곳 이상 입력해 주세요.");
       return;
     }
+    const places = entries.map((e) => e.req);
+    const labels = entries.map((e) => e.label);
 
     setLoading(true);
     setFocusIndex(null);
@@ -70,6 +77,7 @@ function App() {
         radius: radius.trim() ? Number(radius) : undefined,
       });
       setResult(data);
+      setOriginLabels(labels);
       setEditing(false); // 결과 나오면 폼 접기
       if (data.places.length === 0) {
         setError("중간지점 주변에서 역을 찾지 못했어요. 반경을 넓혀보세요.");
@@ -189,22 +197,42 @@ function App() {
                 <div className="list-empty">주변에서 역을 찾지 못했어요. 반경을 넓혀보세요.</div>
               ) : (
                 <ul className="station-list">
-                  {result.places.map((p, i) => (
-                    <li
-                      key={`${p.name}-${i}`}
-                      className={focusIndex === i ? "station active" : "station"}
-                      onClick={() => setFocusIndex(i)}
-                    >
-                      <span className="station-rank">{i + 1}</span>
-                      <div className="station-info">
-                        <div className="station-name">
-                          {p.name} <span className="station-cat">{p.category}</span>
+                  {result.places.map((r, i) => {
+                    const p = r.place;
+                    return (
+                      <li
+                        key={`${p.name}-${i}`}
+                        className={focusIndex === i ? "station active" : "station"}
+                        onClick={() => setFocusIndex(i)}
+                      >
+                        <span className="station-rank">{i + 1}</span>
+                        <div className="station-info">
+                          <div className="station-name">
+                            {p.name} <span className="station-cat">{p.category}</span>
+                          </div>
+                          <div className="station-addr">{p.address}</div>
+                          <div className="station-times">
+                            {r.minutes.map((m, oi) => (
+                              <span className="time-chip" key={oi}>
+                                {originLabels[oi] ?? `출발${oi + 1}`}{" "}
+                                <b>{m == null ? "—" : `${m}분`}</b>
+                              </span>
+                            ))}
+                          </div>
                         </div>
-                        <div className="station-addr">{p.address}</div>
-                      </div>
-                      <span className="station-dist">{p.distance}m</span>
-                    </li>
-                  ))}
+                        <div className="station-metrics">
+                          <span
+                            className={
+                              r.maxMinutes == null ? "station-transit unknown" : "station-transit"
+                            }
+                          >
+                            🚇 {r.maxMinutes == null ? "정보 없음" : `최대 ${r.maxMinutes}분`}
+                          </span>
+                          <span className="station-dist">{p.distance}m</span>
+                        </div>
+                      </li>
+                    );
+                  })}
                 </ul>
               )}
             </aside>

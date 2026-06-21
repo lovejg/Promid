@@ -5,6 +5,7 @@ import com.middle.backend.domain.WeightedPoint;
 import com.middle.backend.dto.*;
 import com.middle.backend.service.KakaoLocalService;
 import com.middle.backend.service.MidpointService;
+import com.middle.backend.service.RankingService;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import lombok.RequiredArgsConstructor;
@@ -19,6 +20,7 @@ import java.util.List;
 public class MidPointController {
     private final MidpointService midpointService;
     private final KakaoLocalService kakaoLocalService;
+    private final RankingService rankingService;
 
     @PostMapping("/api/midpoint")
     public TotalResponse recommend(@Valid @RequestBody TotalRequest request) {
@@ -26,7 +28,7 @@ public class MidPointController {
         Coordinate mid = midpointService.calculateMid(points);
         List<Coordinate> origins = points.stream().map(WeightedPoint::coordinate).toList();
         List<PlaceDto> places = kakaoLocalService.searchStations(mid, request.radius());
-        return new TotalResponse(mid, origins, places);
+        return new TotalResponse(mid, origins, rankingService.rank(origins, places));
     }
 
     @GetMapping("/api/places/search")
@@ -35,7 +37,7 @@ public class MidPointController {
     }
 
 
-    /* ---------------- 헬퍼 ----------------*/
+    /* ---------------- 헬퍼 ---------------- */
 
     private WeightedPoint toWeightedPoint(StartRequest s) {
         Coordinate coord = (s.lat() != null && s.lng() != null)

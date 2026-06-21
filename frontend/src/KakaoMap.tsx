@@ -1,11 +1,11 @@
 import { useEffect, useRef, useState } from "react";
-import type { Coordinate, PlaceDto } from "./types";
+import type { Coordinate, RankedPlace } from "./types";
 import { loadKakaoMaps } from "./kakaoLoader";
 
 interface Props {
   midpoint: Coordinate;
   origins: Coordinate[];
-  places: PlaceDto[];
+  places: RankedPlace[];
   /** 리스트에서 선택된 역 인덱스 (해당 마커로 지도 이동) */
   focusIndex?: number | null;
 }
@@ -58,7 +58,7 @@ export default function KakaoMap({ midpoint, origins, places, focusIndex }: Prop
         origins.forEach((o, i) => bounds.extend(addMarker(o, `출발지 ${i + 1}`, "map-label--origin")));
         bounds.extend(addMarker(midpoint, "중간지점", "map-label--mid"));
         places.forEach((p, i) =>
-          bounds.extend(addMarker(p.location, `${i + 1}. ${p.name}`, "map-label--place")),
+          bounds.extend(addMarker(p.place.location, `${i + 1}. ${p.place.name}`, "map-label--place")),
         );
 
         boundsRef.current = bounds;
@@ -80,7 +80,7 @@ export default function KakaoMap({ midpoint, origins, places, focusIndex }: Prop
     const p = places[focusIndex];
     if (!p) return;
     const kakao = window.kakao;
-    mapRef.current.panTo(new kakao.maps.LatLng(p.location.lat, p.location.lng));
+    mapRef.current.panTo(new kakao.maps.LatLng(p.place.location.lat, p.place.location.lng));
   }, [focusIndex, places]);
 
   // 3) 창 크기 변경 시 지도 다시 맞춤
