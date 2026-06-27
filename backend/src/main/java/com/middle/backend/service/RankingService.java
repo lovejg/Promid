@@ -21,13 +21,13 @@ public class RankingService {
     // 출발지 -> 후보역 소요시간 가지고 점수를 매기고, 그걸로 정렬해서 최종 후보군 반환
     public List<RankedPlace> rank(List<Coordinate> origins, List<PlaceDto> candidates) {
         List<RankedPlace> res = new ArrayList<>();
-        List<PlaceDto> candi = candidates.stream().limit(TOP_N).toList(); // 거리 순으로 8개(제일 가까운 거 8개)
+        List<PlaceDto> candi = candidates.stream().limit(TOP_N).toList(); // 거리 순으로 5개(제일 가까운 거 5개)
         for (PlaceDto placeDto : candi) {
             List<Integer> timeList = new ArrayList<>();
             boolean unreachable = false; // 한 명이라도 경로를 못 구했는지
             for (Coordinate origin : origins) {
-                int time = transitService.transitMinutes(origin, placeDto.location());
-                if (time == Integer.MAX_VALUE) {   // 센티넬 → 응답엔 null로 노출
+                int time = transitService.transitMinutes(origin, placeDto.location()); // ODsay 호출(지연·캐시는 TransitService 책임)
+                if (time == Integer.MAX_VALUE) {
                     timeList.add(null);
                     unreachable = true;
                 } else {

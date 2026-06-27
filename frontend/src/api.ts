@@ -1,4 +1,11 @@
-import type { TotalRequest, TotalResponse, ErrorResponse, PlaceSuggestion } from "./types";
+import type {
+  TotalRequest,
+  TotalResponse,
+  ErrorResponse,
+  PlaceSuggestion,
+  Coordinate,
+  NearbyPlace,
+} from "./types";
 
 const API_BASE = import.meta.env.VITE_API_BASE ?? "http://localhost:8080";
 
@@ -56,4 +63,22 @@ export async function searchPlaces(
     // 네트워크 오류 / AbortError 등은 조용히 무시 (자동완성은 best-effort)
     return [];
   }
+}
+
+/** GET /api/nearby — 역 주변 추천 장소(맛집/카페/명소). 실패 시 ApiError throw(패널에서 메시지 표시). */
+export async function searchNearby(
+  center: Coordinate,
+  query: string,
+  signal?: AbortSignal,
+): Promise<NearbyPlace[]> {
+  const params = new URLSearchParams({
+    lat: String(center.lat),
+    lng: String(center.lng),
+    query,
+  });
+  const res = await fetch(`${API_BASE}/api/nearby?${params}`, { signal });
+  if (!res.ok) {
+    throw new ApiError(res.status, `주변 장소를 불러오지 못했어요 (HTTP ${res.status})`);
+  }
+  return (await res.json()) as NearbyPlace[];
 }

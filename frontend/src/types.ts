@@ -33,6 +33,16 @@ export interface PlaceSuggestion {
   address: string;
 }
 
+/** GET /api/nearby 결과 1개 (역 주변 맛집/카페/명소). placeUrl로 카카오맵 딥링크. */
+export interface NearbyPlace {
+  name: string;
+  category: string;
+  location: Coordinate;
+  address: string;
+  distance: number;
+  placeUrl: string;
+}
+
 /** 대중교통 시간으로 점수 매겨 정렬한 추천 역 1개 (백엔드 RankedPlace) */
 export interface RankedPlace {
   place: PlaceDto;

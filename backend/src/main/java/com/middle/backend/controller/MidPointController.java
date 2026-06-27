@@ -36,6 +36,13 @@ public class MidPointController {
         return kakaoLocalService.searchPlaces(query);
     }
 
+    @GetMapping("/api/nearby")
+    public List<NearbyPlaceDto> nearby(@RequestParam Double lat, @RequestParam double lng,
+                                       @RequestParam(defaultValue = "500") Integer radius,
+                                       @RequestParam @NotBlank String query) {
+        return kakaoLocalService.searchNearby(new Coordinate(lat, lng), radius, query);
+    }
+
 
     /* ---------------- 헬퍼 ---------------- */
 

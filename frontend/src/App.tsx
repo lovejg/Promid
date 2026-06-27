@@ -4,6 +4,7 @@ import type { StartRequest, TotalResponse } from "./types";
 import { ApiError, fetchMidpoint } from "./api";
 import KakaoMap from "./KakaoMap";
 import StartField, { type StartInput } from "./StartField";
+import NearbyPanel from "./NearbyPanel";
 
 const emptyStart = (): StartInput => ({ place: "", coord: null, weight: "" });
 
@@ -18,6 +19,9 @@ function App() {
   const [focusIndex, setFocusIndex] = useState<number | null>(null);
 
   const showForm = !result || editing;
+  const rankedPlaces = result?.places ?? [];
+  const selIndex = focusIndex ?? 0; // 선택된 역(기본 1등). 칩 active + 디테일에 사용
+  const selected = rankedPlaces[selIndex];
 
   const updateStart = (i: number, patch: Partial<StartInput>) =>
     setStarts((prev) => prev.map((s, idx) => (idx === i ? { ...s, ...patch } : s)));
@@ -192,48 +196,60 @@ function App() {
             </div>
 
             <aside className="list-pane">
-              <div className="list-header">추천 역 {result.places.length}곳</div>
-              {result.places.length === 0 ? (
-                <div className="list-empty">주변에서 역을 찾지 못했어요. 반경을 넓혀보세요.</div>
+              {rankedPlaces.length === 0 || !selected ? (
+                <>
+                  <div className="list-header">추천 역 0곳</div>
+                  <div className="list-empty">주변에서 역을 찾지 못했어요. 반경을 넓혀보세요.</div>
+                </>
               ) : (
-                <ul className="station-list">
-                  {result.places.map((r, i) => {
-                    const p = r.place;
-                    return (
-                      <li
-                        key={`${p.name}-${i}`}
-                        className={focusIndex === i ? "station active" : "station"}
+                <>
+                  {/* 역 선택 칩 (마스터) */}
+                  <div className="station-chips">
+                    {rankedPlaces.map((rp, i) => (
+                      <button
+                        type="button"
+                        key={`${rp.place.name}-${i}`}
+                        className={i === selIndex ? "schip active" : "schip"}
                         onClick={() => setFocusIndex(i)}
                       >
-                        <span className="station-rank">{i + 1}</span>
-                        <div className="station-info">
-                          <div className="station-name">
-                            {p.name} <span className="station-cat">{p.category}</span>
-                          </div>
-                          <div className="station-addr">{p.address}</div>
-                          <div className="station-times">
-                            {r.minutes.map((m, oi) => (
-                              <span className="time-chip" key={oi}>
-                                {originLabels[oi] ?? `출발${oi + 1}`}{" "}
-                                <b>{m == null ? "—" : `${m}분`}</b>
-                              </span>
-                            ))}
-                          </div>
-                        </div>
-                        <div className="station-metrics">
-                          <span
-                            className={
-                              r.maxMinutes == null ? "station-transit unknown" : "station-transit"
-                            }
-                          >
-                            🚇 {r.maxMinutes == null ? "정보 없음" : `최대 ${r.maxMinutes}분`}
-                          </span>
-                          <span className="station-dist">{p.distance}m</span>
-                        </div>
-                      </li>
-                    );
-                  })}
-                </ul>
+                        <span className="schip-rank">{i + 1}</span>
+                        <span className="schip-name">{rp.place.name}</span>
+                        <span className="schip-time">
+                          {rp.maxMinutes == null ? "—" : `${rp.maxMinutes}분`}
+                        </span>
+                      </button>
+                    ))}
+                  </div>
+
+                  {/* 선택된 역 디테일 (디테일) */}
+                  <div className="detail">
+                    <div className="detail-head">
+                      <div className="detail-title">
+                        {selected.place.name} <span className="station-cat">{selected.place.category}</span>
+                      </div>
+                      <span
+                        className={
+                          selected.maxMinutes == null ? "station-transit unknown" : "station-transit"
+                        }
+                      >
+                        🚇 {selected.maxMinutes == null ? "정보 없음" : `최대 ${selected.maxMinutes}분`}
+                      </span>
+                    </div>
+                    <div className="detail-addr">
+                      {selected.place.address}
+                      <span className="detail-dist">· {selected.place.distance}m</span>
+                    </div>
+                    <div className="station-times">
+                      {selected.minutes.map((m, oi) => (
+                        <span className="time-chip" key={oi}>
+                          {originLabels[oi] ?? `출발${oi + 1}`} <b>{m == null ? "—" : `${m}분`}</b>
+                        </span>
+                      ))}
+                    </div>
+
+                    <NearbyPanel center={selected.place.location} />
+                  </div>
+                </>
               )}
             </aside>
           </section>

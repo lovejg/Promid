@@ -1,6 +1,7 @@
 package com.middle.backend.service;
 
 import com.middle.backend.domain.Coordinate;
+import com.middle.backend.dto.NearbyPlaceDto;
 import com.middle.backend.dto.PlaceDto;
 import com.middle.backend.dto.PlaceSuggestion;
 import com.middle.backend.dto.kakao.KakaoSearchResponse;
@@ -32,7 +33,6 @@ public class KakaoLocalService {
         return new Coordinate(Double.parseDouble(first.y()), Double.parseDouble(first.x())); // lat이 y고, lng가 x
     }
 
-    // 좌표 -> 근처 장소
     public List<PlaceDto> searchStations(Coordinate center, Integer radius) {
         KakaoSearchResponse res = kakaoRestClient.get().uri(uriBuilder -> uriBuilder
                         .path("/v2/local/search/category.json")
@@ -68,5 +68,28 @@ public class KakaoLocalService {
         return docs.stream().map(d -> new PlaceSuggestion(d.placeName(),
                 new Coordinate(Double.parseDouble(d.y()), Double.parseDouble(d.x())),
                 d.addressName())).toList();
+    }
+
+    public List<NearbyPlaceDto> searchNearby(Coordinate center, Integer radius, String keyword) {
+        KakaoSearchResponse res = kakaoRestClient.get().uri(uriBuilder -> uriBuilder
+                        .path("/v2/local/search/keyword.json")
+                        .queryParam("query", keyword)
+                        .queryParam("x", center.lng())
+                        .queryParam("y", center.lat())
+                        .queryParam("radius", radius)
+                        .queryParam("sort", "distance")
+                        .build())
+                .retrieve()
+                .body(KakaoSearchResponse.class);
+
+        var placeList = res.documents().stream().limit(10).map(d -> new NearbyPlaceDto(
+                d.placeName(),
+                d.categoryGroupName(),
+                new Coordinate(Double.parseDouble(d.y()), Double.parseDouble(d.x())),
+                (d.roadAddressName() != null && !d.roadAddressName().isBlank()) ? d.roadAddressName() : d.addressName(),
+                Integer.parseInt(d.distance()),
+                d.placeUrl())).toList();
+
+        return placeList;
     }
 }

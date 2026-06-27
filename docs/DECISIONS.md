@@ -86,3 +86,15 @@
   - **센티넬은 조립 지점(`RankingService`)에서 `null`로 변환**. `RankedPlace.maxMinutes`를 `int`→`Integer`(nullable)로 바꾸고, 한 명이라도 못 가면 점수=null → **`Comparator.nullsLast`로 맨 뒤 정렬**. 시간을 못 구한 출발지도 `minutes`에 null.
 - **이유**: throttle은 수 초 내 회복되는 일시적 현상이라, 우선 **호출량을 줄이고**(근본 부담 완화) **실패를 우아하게 degrade**(null 표시·맨 뒤 정렬)시키는 게 가성비 최고. 값을 못 구한 걸 "0분"이나 큰 수로 위장하면 *틀린 정보*가 되니, 정직하게 "정보 없음(null)"으로. 센티넬 변환을 저수준 `TransitService`가 아니라 **조립 지점**에서 한 건, `TransitService`의 단순 계약(`MAX_VALUE=못 감`)은 그대로 두고 표현 책임만 상위에서 지게 하려는 것.
 - **남은 카드(후속)**: 5개로 줄여도 가끔 throttle이 걸림 → 필요 시 **호출 간 소량 지연(B-1)** 또는 **실패 재시도(B-2)**, 무료 일일한도(1000/일) 대비 **캐싱(B-4)**. 프론트로 체감 본 뒤 결정 보류.
+
+## 12. ODsay 호출 안정화 3종(지연·캐싱·에러 가시화)과 "실패는 캐시하지 않는다"
+
+- **배경**: #11의 "남은 카드"를 실제로 집행. 5개로 줄여도 burst throttle이 남았고, 무료 한도(1000/일)도 의식해야 했음. 작업 중 **모든 역이 통째로 `null`로 오는 사건** 발생 → throttle(부분·랜덤)과 달라 다른 원인 의심 → 직접 호출해보니 `[ApiKeyAuthFailed]`. 호출수 0·키 일치였고, **카페로 이동해 공인 IP가 바뀐 것**이 원인(ODsay 키는 등록 IP 화이트리스트). 그런데 우리는 **그 에러를 응답 DTO에서 안 받아 장님 상태**였다 — 진단에 시간을 날림.
+- **선택지**: (지연 위치) RankingService에서 매 호출 전 vs TransitService에서 실제 호출 직전. (캐시 저장소) 인메모리 `ConcurrentHashMap` vs Redis. (실패값 캐시) 저장 vs 미저장. (에러) 무시 vs 로깅.
+- **결정**:
+  - **①-A 호출 간 지연 200ms**(`Thread.sleep`, `InterruptedException` 시 `Thread.currentThread().interrupt()`로 플래그 복원). burst를 시간축으로 흩뿌려 throttle 회피.
+  - **①-B 인메모리 캐싱** — 키 `record Leg(from, to)`(값 기반 equals/hashCode), `ConcurrentHashMap`(싱글톤 빈+톰캣 요청별 스레드 → 동시 쓰기 발생하므로 평범한 HashMap은 깨짐). **성공값만 `put`, 실패(`MAX_VALUE`)는 저장 안 함.**
+  - **①-C 에러 가시화** — `OdsayPathResponse`에 `error` 배열 필드 추가, 실패 시 `log.warn(code, message)`. (성공 응답엔 error 없음 → 역직렬화 무해.)
+  - **지연 위치 = TransitService의 캐시 확인 통과 직후**(처음엔 RankingService에 뒀다가 이동). 캐시 히트는 네트워크를 안 타므로 잘 필요가 없음 → 옮긴 뒤 동일 재검색 2.16s→0.16s.
+  - 저장소는 **지금은 인메모리, 인증 도입 시 Redis로 승격**(세션도 Redis 쓸 예정).
+- **이유**: **"실패는 캐시 안 함"이 핵심 함정 회피** — IP·throttle 같은 *일시적* 실패값을 캐시하면 "영구히 못 가는 곳"으로 박제돼 IP 풀려도 계속 실패함. 구조적으로도 실패 분기는 `cache.put` 앞에서 early-return이라 자동 보장됨. 지연을 ODsay 호출 쪽(TransitService)에 둔 건 **책임 위치가 자연스럽고**(지연은 네트워크 호출의 속성) 캐시 이득(히트 시 0 지연)을 온전히 살리기 때문. 인메모리를 먼저 택한 건 stateless MVP에 외부 인프라를 끌어들이지 않으려는 것 — 같은 중점은 반경을 넓혀 재검색해도 안 바뀌므로 겹치는 역에서 캐시 히트가 잘 남. ①-C는 이번 사건처럼 **외부 API 실패를 두 번 다시 장님으로 겪지 않으려는** 가시성 투자.

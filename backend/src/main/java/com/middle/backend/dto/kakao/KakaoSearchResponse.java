@@ -12,6 +12,7 @@ public record KakaoSearchResponse(List<Document> documents) {
             @JsonProperty("address_name")        String addressName,
             String x,         // 경도(lng) — 문자열
             String y,         // 위도(lat) — 문자열
-            String distance   // 중점에서 거리(m) — 문자열 (category 검색 sort=distance일 때 채워짐)
+            String distance,  // 중점에서 거리(m) — 문자열 (category 검색 sort=distance일 때 채워짐)
+            @JsonProperty("place_url")           String placeUrl   // 카카오맵 상세 페이지 URL(딥링크용)
     ) {}
 }

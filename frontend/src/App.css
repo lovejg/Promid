@@ -570,101 +570,121 @@ button {
   font-size: 0.88rem;
 }
 
-.station-list {
-  list-style: none;
-  margin: 0;
-  padding: 10px;
-  overflow-y: auto;
-  flex: 1 1 auto;
+/* ---- 마스터: 역 선택 칩 줄 ---- */
+.station-chips {
+  flex: 0 0 auto;
   display: flex;
-  flex-direction: column;
-  gap: 8px;
+  flex-wrap: wrap;
+  gap: 7px;
+  padding: 12px;
+  border-bottom: 1px solid var(--line);
 }
 
-.station {
+.schip {
   display: flex;
-  align-items: flex-start;
-  gap: 13px;
-  padding: 14px;
+  align-items: center;
+  gap: 7px;
+  padding: 6px 11px 6px 7px;
   border: 1px solid var(--line);
-  border-radius: 14px;
-  cursor: pointer;
   background: #fff;
-  transition: transform 0.16s ease, box-shadow 0.16s ease, border-color 0.16s ease;
+  border-radius: 999px;
+  transition: all 0.15s ease;
 }
 
-.station:hover {
-  transform: translateY(-2px);
+.schip:hover {
   border-color: #c7d2fe;
-  box-shadow: var(--shadow-sm);
+  background: var(--brand-soft);
 }
 
-.station.active {
-  border-color: var(--brand);
-  background: linear-gradient(0deg, rgba(238, 242, 255, 0.6), rgba(238, 242, 255, 0.6)), #fff;
-  box-shadow: 0 0 0 3px var(--brand-ring);
+.schip.active {
+  border-color: transparent;
+  background: var(--brand-grad);
+  box-shadow: var(--shadow-brand);
 }
 
-.station-rank {
-  flex: 0 0 30px;
-  height: 30px;
-  border-radius: 10px;
+.schip-rank {
+  width: 20px;
+  height: 20px;
+  border-radius: 7px;
   background: var(--brand-soft);
   color: var(--brand);
-  font-size: 0.88rem;
+  font-size: 0.74rem;
   font-weight: 800;
   display: grid;
   place-items: center;
 }
 
-/* 상위 3등 메달 컬러 */
-.station:nth-child(1) .station-rank {
-  background: linear-gradient(135deg, #fbbf24, #f59e0b);
+.schip.active .schip-rank {
+  background: rgba(255, 255, 255, 0.25);
   color: #fff;
-  box-shadow: 0 5px 12px -4px rgba(245, 158, 11, 0.6);
-}
-.station:nth-child(2) .station-rank {
-  background: linear-gradient(135deg, #cbd5e1, #94a3b8);
-  color: #fff;
-  box-shadow: 0 5px 12px -4px rgba(148, 163, 184, 0.6);
-}
-.station:nth-child(3) .station-rank {
-  background: linear-gradient(135deg, #e2a06a, #c2703d);
-  color: #fff;
-  box-shadow: 0 5px 12px -4px rgba(194, 112, 61, 0.5);
 }
 
-.station-info {
-  flex: 1 1 auto;
-  min-width: 0;
-}
-
-.station-name {
+.schip-name {
+  font-size: 0.84rem;
   font-weight: 700;
-  font-size: 0.96rem;
   color: var(--ink);
-  letter-spacing: -0.01em;
+}
+
+.schip.active .schip-name {
+  color: #fff;
+}
+
+.schip-time {
+  font-size: 0.74rem;
+  font-weight: 600;
+  color: var(--muted);
+}
+
+.schip.active .schip-time {
+  color: rgba(255, 255, 255, 0.85);
+}
+
+/* ---- 디테일: 선택된 역 상세 ---- */
+.detail {
+  flex: 1 1 auto;
+  overflow-y: auto;
+  padding: 16px 16px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  animation: pop 0.18s ease both;
+}
+
+.detail-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.detail-title {
+  font-size: 1.2rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: var(--ink);
 }
 
 .station-cat {
-  margin-left: 7px;
-  font-size: 0.72rem;
+  margin-left: 6px;
+  font-size: 0.74rem;
   font-weight: 500;
   color: var(--faint);
 }
 
-.station-addr {
-  margin-top: 3px;
-  font-size: 0.8rem;
+.detail-addr {
+  font-size: 0.82rem;
   color: var(--muted);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+}
+
+.detail-dist {
+  margin-left: 4px;
+  color: var(--faint);
+  font-weight: 600;
 }
 
 /* 출발지별 소요시간 칩 */
 .station-times {
-  margin-top: 9px;
+  margin-top: 4px;
   display: flex;
   flex-wrap: wrap;
   gap: 6px;
@@ -684,17 +704,8 @@ button {
   font-weight: 700;
 }
 
-/* 우측 지표 열: 최대 시간(주연) + 거리(조연) */
-.station-metrics {
-  flex: 0 0 auto;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 6px;
-  text-align: right;
-}
-
 .station-transit {
+  flex: 0 0 auto;
   font-size: 0.84rem;
   font-weight: 700;
   color: var(--brand);
@@ -710,10 +721,120 @@ button {
   font-weight: 600;
 }
 
-.station-dist {
-  font-size: 0.76rem;
+/* ---- 둘러보기 패널 (디테일 안: 탭 + 장소 그리드) ---- */
+.nearby {
+  margin-top: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.nearby-tabs {
+  display: flex;
+  gap: 6px;
+}
+
+.nearby-tab {
+  flex: 1 1 0;
+  border: 1px solid var(--line);
+  background: #fff;
+  color: var(--muted);
+  border-radius: 9px;
+  padding: 8px 0;
+  font-size: 0.84rem;
   font-weight: 600;
+  transition: all 0.14s ease;
+}
+
+.nearby-tab:hover {
+  border-color: #c7d2fe;
+  color: var(--brand);
+}
+
+.nearby-tab.active {
+  background: var(--brand-grad);
+  border-color: transparent;
+  color: #fff;
+  box-shadow: 0 5px 12px -5px var(--brand-ring);
+}
+
+.nearby-status {
+  padding: 26px 8px;
+  text-align: center;
+  font-size: 0.84rem;
+  color: var(--muted);
+}
+
+.nearby-grid {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.nearby-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  height: 100%;
+  padding: 12px 13px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: #fff;
+  text-decoration: none;
+  color: inherit;
+  transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+}
+
+.nearby-card:hover {
+  transform: translateY(-2px);
+  border-color: #c7d2fe;
+  box-shadow: var(--shadow-sm);
+}
+
+.nearby-name {
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: var(--ink);
+  line-height: 1.3;
+  padding-right: 16px; /* ↗ 자리 확보 */
+}
+
+.nearby-sub {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  flex-wrap: wrap;
+}
+
+.nearby-cat {
+  font-size: 0.72rem;
   color: var(--faint);
+}
+
+.nearby-dist {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--brand);
+  background: var(--brand-soft);
+  border-radius: 999px;
+  padding: 1px 8px;
+}
+
+.nearby-go {
+  position: absolute;
+  top: 10px;
+  right: 11px;
+  font-size: 0.82rem;
+  color: var(--faint);
+  transition: color 0.15s ease;
+}
+
+.nearby-card:hover .nearby-go {
+  color: var(--brand);
 }
 
 /* ---- map marker labels (CustomOverlay) ---- */

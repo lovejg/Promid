@@ -66,7 +66,25 @@
       "Bash(pkill -f 'BackendApplication')",
       "Bash(echo \"--- tsc 종료코드: $? ---\")",
       "Bash(curl -s -o /dev/null -w \"프론트 응답: %{http_code}\\\\n\" http://localhost:5173/)",
-      "Bash(curl -s -o /dev/null -w \"백엔드 응답: %{http_code}\\\\n\" \"http://localhost:8080/api/places/search?query=강남\")"
+      "Bash(curl -s -o /dev/null -w \"백엔드 응답: %{http_code}\\\\n\" \"http://localhost:8080/api/places/search?query=강남\")",
+      "Bash(curl -s -o /dev/null -w \"backend\\(8080\\): %{http_code}\\\\n\" http://localhost:8080/api/midpoint -X POST -H \"Content-Type: application/json\" -d '{}')",
+      "Bash(jobs -l)",
+      "Bash(python3 -c 'import sys,json; d=json.load\\(sys.stdin\\); print\\(\"midpoint:\",d[\"midpoint\"]\\); [print\\(f\"  {i+1}. {p[\\\\\"place\\\\\"][\\\\\"name\\\\\"]:<18} minutes={p[\\\\\"minutes\\\\\"]} max={p[\\\\\"maxMinutes\\\\\"]}\"\\) for i,p in enumerate\\(d[\"places\"]\\)]')",
+      "Bash(cat)",
+      "Bash(python3 /tmp/parse.py)",
+      "Bash(grep -ivE \"^\\\\s*$\")",
+      "Bash(pkill -f \"GradleDaemon\\\\|bootRun\\\\|backend.*BackendApplication\")",
+      "Bash(pkill -f \"com.middle.backend\")",
+      "Bash(fuser -k 8080/tcp)",
+      "Bash(curl -s http://localhost:8080/api/midpoint -X POST -H 'Content-Type: application/json' -d '{\"places\":[{\"place\":\"강남역\"},{\"place\":\"여의도역\"}],\"radius\":2000}')",
+      "Bash(./gradlew bootRun *)",
+      "Bash(python3 -c ' *)",
+      "Bash(curl -s -G \"http://localhost:8080/api/nearby\" --data-urlencode \"lat=37.4979\" --data-urlencode \"lng=127.0276\" --data-urlencode \"query=맛집\" -o nearby.json -w \"HTTP %{http_code}\\\\n\")",
+      "Bash(curl -s -G \"http://localhost:8080/api/nearby\" --data-urlencode \"lat=37.4979\" --data-urlencode \"lng=127.0276\" --data-urlencode \"query=\" -o /dev/null -w \"HTTP %{http_code}\\\\n\")",
+      "Bash(curl -s -o /dev/null -w \"root: HTTP %{http_code}\\\\n\" http://localhost:8080/)",
+      "Bash(curl -s -G \"http://localhost:8080/api/nearby\" --data-urlencode \"lng=127.0276\" --data-urlencode \"query=맛집\" -o /dev/null -w \"HTTP %{http_code}\\\\n\")",
+      "Bash(curl -s -o /dev/null -w \"vite\\(5173\\): HTTP %{http_code}\\\\n\" http://localhost:5173/)",
+      "Bash(curl -s -o /dev/null -w \"backend\\(8080\\): HTTP %{http_code}\\\\n\" http://localhost:8080/api/nearby?lat=37.5)"
     ]
   }
 }
